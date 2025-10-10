@@ -682,7 +682,7 @@ st.title("🍽️ Barbeque Nation Buffet Monitor")
 
 # Sidebar Controls
 st.sidebar.header("⚙️ Controls")
-interval = st.sidebar.number_input("Auto-refresh interval (seconds)", min_value=30, value=60, step=30)
+interval = st.sidebar.number_input("Auto-refresh interval (seconds)", min_value=1800, value=1800, step=600)
 days_to_fetch = st.sidebar.number_input("Days to fetch", min_value=1, value=1)
 branch_names = ["All Branches"] + [info["name"] for info in branches_config.values()]
 selected_branch = st.sidebar.selectbox("Select Branch", branch_names)
@@ -752,3 +752,4 @@ if not st.session_state.last_changes.empty:
 st.markdown("### 📊 Current Buffet Data")
 st.dataframe(df, use_container_width=True)
 st.write("Total Rows:", len(df))
+
