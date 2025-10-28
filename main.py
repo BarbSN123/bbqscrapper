@@ -10,7 +10,7 @@ url = "https://www.barbequenation.com/api/v1/menu-buffet-price"
 headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
 
 branches_config = {
-    "171": {
+    "14": {
         "name": "Koramangala",
         "slots": {
             "12:00:00": 1105, "12:30:00": 1105, "13:00:00": 1105,
@@ -208,3 +208,4 @@ if df.empty:
 else:
     st.dataframe(df, use_container_width=True)
     st.write("Total Rows:", len(df))
+
