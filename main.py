@@ -58,7 +58,7 @@ headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"}
 # }
 
 branches_config = {
-    "171": {   # Branch ID as string Thiis is not edited has to be done at last
+    "14": {   # Branch ID as string Thiis is not edited has to be done at last
         "name": "Koramangala",
         "slots": {
             "12:00:00": 1105, "12:30:00": 1105, "13:00:00": 1105,
@@ -854,3 +854,4 @@ if not st.session_state.last_changes.empty:
 st.markdown("### 📊 Current Buffet Data")
 st.dataframe(df, use_container_width=True)
 st.write("Total Rows:", len(df))
+
