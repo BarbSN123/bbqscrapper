@@ -3,12 +3,18 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 from streamlit_autorefresh import st_autorefresh
+import time
+import requests
+
 
 # ========= CONFIG =========
 st.set_page_config(page_title="Buffet Price Monitor", layout="wide")
 
 # Your live GitHub JSON link
-GITHUB_JSON_URL = "https://raw.githubusercontent.com/diyanshu-anand/bbq-data/main/json/buffet_data.json"
+# GITHUB_JSON_URL = "https://raw.githubusercontent.com/diyanshu-anand/bbq-data/main/json/buffet_data.json"  Cache issues
+GITHUB_JSON_URL = f"https://raw.githubusercontent.com/diyanshu-anand/bbq-data/main/json/buffet_data.json?nocache={int(time.time())}"
+# response = requests.get(url, headers={"Cache-Control": "no-cache"})
+# data = response.json()
 
 st.title("🍽️ Barbeque Nation Buffet Monitor (GitHub Synced)")
 
