@@ -126,7 +126,7 @@ st.sidebar.markdown("### 🕓 Refresh Log")
 for entry in st.session_state.log:
     st.sidebar.write(entry)
 
-# ========= DISPLAY =========
+# ========= DISPLAY With All Dates =========
 st.subheader(f"📅 Viewing Data for: {selected_date.strftime('%Y-%m-%d')}")
 st.caption(f"🗂️ Data generated at (from GitHub): {generated_at}")
 st.caption(f"💾 Last refreshed: {st.session_state.last_updated}")
@@ -139,6 +139,22 @@ if not st.session_state.last_changes.empty:
 if df.empty:
     st.warning("No data found for the selected date and branch.")
 else:
-    st.markdown("### 📊 Current Buffet Data")
+    st.markdown("### 📊 Current Buffet Data (Selected Date)")
     st.dataframe(df, use_container_width=True)
     st.write("Total Rows:", len(df))
+
+# ========= SHOW ALL DATA =========
+st.markdown("---")
+st.markdown("## 📆 Complete Buffet Dataset (All Dates)")
+
+# Optional branch filter reuse (so same branch filter applies)
+full_df = fetch_from_github()[0]
+
+if selected_branch != "All Branches":
+    full_df = full_df[full_df["Branch"] == selected_branch]
+
+if full_df.empty:
+    st.warning("No buffet data found for all dates.")
+else:
+    st.dataframe(full_df.sort_values(["Date", "Branch"]), use_container_width=True)
+    st.write("Total Rows (All Dates):", len(full_df))
