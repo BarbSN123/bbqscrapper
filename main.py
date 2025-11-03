@@ -37,30 +37,48 @@ if "first_run" not in st.session_state:
 if "log" not in st.session_state:
     st.session_state.log = []
 
-# ========= FETCH DATA =========
 @st.cache_data(ttl=120)
 def fetch_from_github():
-    try:
-        res = requests.get(GITHUB_JSON_URL)
-        res.raise_for_status()
-        raw = res.json()
+    base_url = "https://raw.githubusercontent.com/diyanshu-anand/bbq-data/refs/heads/main/json/"
+    files = [
+        "buffet_data_1.json",
+        "buffet_data_2.json",
+        "buffet_data_3.json"
+    ]
 
-        # Handle both old and new formats
-        if isinstance(raw, dict) and "records" in raw:
-            df = pd.DataFrame(raw["records"])
-            gen_time = raw.get("generated_at", "Unknown")
-        else:
-            df = pd.DataFrame(raw)
-            gen_time = "Unknown"
+    dfs = []
+    gen_time = "Unknown"
 
-        # Convert date column to datetime for filtering
-        if "Date" in df.columns:
-            df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+    for file in files:
+        url = f"{base_url}/{file}?nocache={int(time.time())}"
+        try:
+            res = requests.get(url)
+            res.raise_for_status()
+            raw = res.json()
 
-        return df, gen_time
-    except Exception as e:
-        st.error(f"⚠️ Error fetching data: {e}")
-        return pd.DataFrame(), None
+            # Handle both old and new formats
+            if isinstance(raw, dict) and "records" in raw:
+                df = pd.DataFrame(raw["records"])
+                gen_time = raw.get("generated_at", gen_time)
+            else:
+                df = pd.DataFrame(raw)
+
+            # Convert Date column to datetime for consistency
+            if "Date" in df.columns:
+                df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+
+            dfs.append(df)
+
+        except Exception as e:
+            st.warning(f"⚠️ Could not load {file}: {e}")
+
+    # Merge all into one DataFrame
+    if dfs:
+        full_df = pd.concat(dfs, ignore_index=True)
+    else:
+        full_df = pd.DataFrame()
+
+    return full_df, gen_time
 
 
 df, generated_at = fetch_from_github()
@@ -96,19 +114,42 @@ if selected_branch != "All Branches":
 
 # ========= CHANGE DETECTION =========
 changes_detected = False
+change_messages = []
+
 if not st.session_state.first_run and not st.session_state.prev_data.empty:
     common_cols = [c for c in st.session_state.prev_data.columns if c in df.columns]
     new_data = df[common_cols].reset_index(drop=True)
     old_data = st.session_state.prev_data[common_cols].reset_index(drop=True)
 
-    diff = new_data[new_data.ne(old_data).any(axis=1)]
+    # Compare new and old rows
+    diff_mask = new_data.ne(old_data).any(axis=1)
+    diff = new_data[diff_mask]
+
     if not diff.empty:
         st.session_state.last_changes = diff
         changes_detected = True
+
+        # Create one-line descriptions
+        for i in diff.index:
+            branch = diff.loc[i, "Branch"] if "Branch" in diff.columns else "Unknown Branch"
+            slot = diff.loc[i, "Slot Time"] if "Slot Time" in diff.columns else "Unknown Time"
+            date = diff.loc[i, "Date"].strftime("%Y-%m-%d") if "Date" in diff.columns else "Unknown Date"
+
+            msg = f"🔄 Change detected at {branch} — {slot} on {date}"
+            change_messages.append(msg)
     else:
         st.session_state.last_changes = pd.DataFrame()
 else:
     st.session_state.last_changes = pd.DataFrame()
+    change_messages = []
+
+# ========= DISPLAY CHANGE MESSAGES =========
+if change_messages:
+    st.markdown("### 🧭 Change Summary")
+    for msg in change_messages:
+        st.success(msg)
+    st.markdown("---")
+
 
 # ========= UPDATE SESSION STATE =========
 st.session_state.prev_data = df.copy()
@@ -126,7 +167,26 @@ st.sidebar.markdown("### 🕓 Refresh Log")
 for entry in st.session_state.log:
     st.sidebar.write(entry)
 
-# ========= DISPLAY With All Dates =========
+# ========= DISPLAY =========
+# st.subheader(f"📅 Viewing Data for: {selected_date.strftime('%Y-%m-%d')}")
+# st.caption(f"🗂️ Data generated at (from GitHub): {generated_at}")
+# st.caption(f"💾 Last refreshed: {st.session_state.last_updated}")
+
+# if not st.session_state.last_changes.empty:
+#     st.markdown("### 🔄 Recently Changed Data")
+#     st.dataframe(st.session_state.last_changes, use_container_width=True)
+#     st.markdown("---")
+
+# if df.empty:
+#     st.warning("No data found for the selected date and branch.")
+# else:
+#     st.markdown("### 📊 Current Buffet Data")
+#     st.dataframe(df, use_container_width=True)
+#     st.write("Total Rows:", len(df))
+
+
+# ========= DISPLAY included with all the dates =========
+
 st.subheader(f"📅 Viewing Data for: {selected_date.strftime('%Y-%m-%d')}")
 st.caption(f"🗂️ Data generated at (from GitHub): {generated_at}")
 st.caption(f"💾 Last refreshed: {st.session_state.last_updated}")
@@ -158,3 +218,4 @@ if full_df.empty:
 else:
     st.dataframe(full_df.sort_values(["Date", "Branch"]), use_container_width=True)
     st.write("Total Rows (All Dates):", len(full_df))
+
