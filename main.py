@@ -95,12 +95,23 @@ if pd.isna(min_date) or pd.isna(max_date):
     min_date = datetime.now().date()
     max_date = datetime.now().date() + timedelta(days=30)
 
+today = datetime.now().date()
+
+# Ensure default value is within range
+if today < min_date.date():
+    default_date = min_date.date()
+elif today > max_date.date():
+    default_date = max_date.date()
+else:
+    default_date = today
+
 selected_date = st.sidebar.date_input(
-    "Select Date", 
-    value=datetime.now().date(), 
-    min_value=min_date.date(), 
+    "Select Date",
+    value=default_date,
+    min_value=min_date.date(),
     max_value=max_date.date()
 )
+
 
 # Filter by selected date
 df = df[df["Date"].dt.date == selected_date]
@@ -218,4 +229,5 @@ if full_df.empty:
 else:
     st.dataframe(full_df.sort_values(["Date", "Branch"]), use_container_width=True)
     st.write("Total Rows (All Dates):", len(full_df))
+
 
