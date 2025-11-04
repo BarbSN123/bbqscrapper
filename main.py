@@ -146,8 +146,8 @@ if not st.session_state.first_run and not st.session_state.prev_data.empty:
             slot = diff.loc[i, "Slot Time"] if "Slot Time" in diff.columns else "Unknown Time"
             date = diff.loc[i, "Date"].strftime("%Y-%m-%d") if "Date" in diff.columns else "Unknown Date"
 
-            msg = f"🔄 Change detected at {branch} — {slot} on {date}"
-            change_messages.append(msg)
+            # msg = f"🔄 Change detected at {branch} — {slot} on {date}"
+            # change_messages.append(msg)
     else:
         st.session_state.last_changes = pd.DataFrame()
 else:
@@ -229,5 +229,6 @@ if full_df.empty:
 else:
     st.dataframe(full_df.sort_values(["Date", "Branch"]), use_container_width=True)
     st.write("Total Rows (All Dates):", len(full_df))
+
 
 
