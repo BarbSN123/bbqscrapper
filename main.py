@@ -243,7 +243,7 @@ from email.mime.multipart import MIMEMultipart
 # ========= CONFIG =========
 st.set_page_config(page_title="Buffet Price Monitor", layout="wide")
 
-st.title("🍽️ Barbeque Nation Buffet Monitor (GitHub Synced)")
+st.title("🍽️ Barbeque Nation Buffet Monitor")
 
 # ========= EMAIL CONFIG =========
 SMTP_SERVER = "smtp.gmail.com"
@@ -253,7 +253,7 @@ EMAIL_SENDER = "mona100975@gmail.com"
 EMAIL_PASSWORD = "ghdt vdgv bern hgur"
 EMAIL_RECEIVER = "bbqnation1010@gmail.com"
 
-DASHBOARD_LINK = "https://your-dashboard-link.streamlit.app"
+DASHBOARD_LINK = "https://bbqscrapper.streamlit.app/"
 
 
 def send_email(subject, body):
