@@ -319,7 +319,7 @@ def fetch_from_github():
     #     "buffet_data_3.json",
     # ]
 
-    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/refs/heads/main/json/"
+    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
     
     files = [
         "buffet_data_1.json",
