@@ -311,13 +311,22 @@ if "last_generated_at" not in st.session_state:
 @st.cache_data(ttl=120)
 def fetch_from_github():
 
-    base_url = "https://raw.githubusercontent.com/diyanshu-anand/bbq-data/refs/heads/main/json"
+    # base_url = "https://raw.githubusercontent.com/diyanshu-anand/bbq-data/refs/heads/main/json"
 
+    # files = [
+    #     "buffet_data_1.json",
+    #     "buffet_data_2.json",
+    #     "buffet_data_3.json",
+    # ]
+
+    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/refs/heads/main/json/"
+    
     files = [
         "buffet_data_1.json",
         "buffet_data_2.json",
         "buffet_data_3.json",
     ]
+
 
     dfs = []
     gen_time = "Unknown"
