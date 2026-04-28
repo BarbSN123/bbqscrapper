@@ -1402,6 +1402,14 @@ if selected_branch != "All Branches":
 full_df = full_df[["Date", "Day"] + [col for col in full_df.columns if col not in ["Date", "Day"]]]
 
 #  LIMIT DISPLAY (VERY IMPORTANT)
-st.dataframe(full_df.sort_values(["Date", "Branch"]).tail(1000), width="stretch")
+# st.dataframe(full_df.sort_values(["Date", "Branch"]).tail(1000), width="stretch")
+# SORT FIRST
+full_df = full_df.sort_values(["Date", "Branch"])
+
+# TAKE EVENLY SPREAD DATA (not just last rows)
+if len(full_df) > 2000:
+    full_df = full_df.iloc[::len(full_df)//2000]   # smart sampling
+
+st.dataframe(full_df, use_container_width=True)
 
 st.write("Total Rows (All Dates):", len(full_df))
