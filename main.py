@@ -1139,6 +1139,47 @@ def fetch_from_github():
     full_df = pd.concat(dfs, ignore_index=True)
     return full_df, gen_time
 
+def fetch_full_no_cache():
+    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
+
+    files = [
+        "buffet_data_part_1.json",
+        "buffet_data_part_2.json",
+        "buffet_data_part_3.json",
+        "buffet_data_part_4.json",
+        "buffet_data_part_5.json",
+        "buffet_data_part_6.json",
+        "buffet_data_part_7.json",
+        "buffet_data_part_8.json",
+    ]
+
+    dfs = []
+
+    for file in files:
+        url = f"{base_url}/{file}?nocache={int(time.time())}"
+        try:
+            res = requests.get(url, timeout=1000)
+            res.raise_for_status()
+            raw = res.json()
+
+            if isinstance(raw, dict) and "records" in raw:
+                df = pd.DataFrame(raw["records"])
+            else:
+                df = pd.DataFrame(raw)
+
+            if "Date" in df.columns:
+                df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+                df = df.dropna(subset=["Date"])
+
+            dfs.append(df)
+
+        except Exception as e:
+            st.warning(f"⚠️ Could not load {file}: {e}")
+
+    if not dfs:
+        return pd.DataFrame()
+
+    return pd.concat(dfs, ignore_index=True)
 
 # ========= LOAD =========
 df, generated_at = fetch_from_github()
@@ -1269,7 +1310,8 @@ else:
 st.markdown("---")
 st.markdown("## 📆 Complete Dataset")
 
-full_df, _ = fetch_from_github()
+# full_df, _ = fetch_from_github() (uncomment this tommorow)
+full_df = fetch_full_no_cache()
 
 if full_df.empty:
     st.warning("No complete dataset available.")
