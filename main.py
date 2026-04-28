@@ -1158,7 +1158,7 @@ def fetch_full_no_cache():
     for file in files:
         url = f"{base_url}/{file}?nocache={int(time.time())}"
         try:
-            res = requests.get(url, timeout=1000)
+            res = requests.get(url, timeout=10)
             res.raise_for_status()
             raw = res.json()
 
