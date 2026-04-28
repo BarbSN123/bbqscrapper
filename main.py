@@ -1090,13 +1090,14 @@ if "last_updated" not in st.session_state:
 # ========= FETCH DATA =========
 @st.cache_data(ttl=120)
 def fetch_from_github():
-    # base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
-    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
+    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    # base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
 
     files = [
-        "buffet_data_part_1.json",
-        "buffet_data_part_2.json",
-        # "buffet_data_3.json",
+        "buffet_data_1.json",
+        "buffet_data_2.json",
+        "buffet_data_3.json",
+        "buffet_data_4.json",
     ]
 
     dfs = []
@@ -1132,13 +1133,14 @@ def fetch_from_github():
     return full_df, gen_time
 
 def fetch_full_no_cache():
-    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
-    # base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    # base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
+    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
     
     files = [
-        "buffet_data_part_1.json",
-        "buffet_data_part_2.json",
-        # "buffet_data_3.json",
+        "buffet_data_1.json",
+        "buffet_data_2.json",
+        "buffet_data_3.json",
+        "buffet_data_4.json"
     ]
     
     # files = [
