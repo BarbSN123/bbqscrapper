@@ -1114,7 +1114,7 @@ def fetch_from_github():
         url = f"{base_url}/{file}?nocache={int(time.time())}"
 
         try:
-            res = requests.get(url, timeout=10)
+            res = requests.get(url, timeout=1000)
             res.raise_for_status()
             raw = res.json()
 
