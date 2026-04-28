@@ -1381,7 +1381,7 @@ def fetch_full_data():
     return pd.concat(dfs, ignore_index=True)
 
 
-# LOAD ONCE (CACHED)
+# LOAD DATA
 with st.spinner("Loading full dataset..."):
     full_df = fetch_full_data()
 
@@ -1401,15 +1401,36 @@ if selected_branch != "All Branches":
 
 full_df = full_df[["Date", "Day"] + [col for col in full_df.columns if col not in ["Date", "Day"]]]
 
-#  LIMIT DISPLAY (VERY IMPORTANT)
-# st.dataframe(full_df.sort_values(["Date", "Branch"]).tail(1000), width="stretch")
-# SORT FIRST
+# SORT FULL DATA
 full_df = full_df.sort_values(["Date", "Branch"])
 
-# TAKE EVENLY SPREAD DATA (not just last rows)
-if len(full_df) > 2000:
-    full_df = full_df.iloc[::len(full_df)//2000]   # smart sampling
+# ========= UI STRATEGY =========
 
-st.dataframe(full_df, use_container_width=True)
+st.write(f"📊 Total Rows (All Dates): {len(full_df)}")
 
-st.write("Total Rows (All Dates):", len(full_df))
+# 1. SHOW LIMITED VIEW (FAST)
+st.markdown("### 🔍 Preview (First 2000 rows)")
+st.dataframe(full_df.head(2000), use_container_width=True)
+
+# 2. DOWNLOAD FULL DATA (REAL SOLUTION)
+csv = full_df.to_csv(index=False).encode("utf-8")
+
+st.download_button(
+    label="⬇️ Download Full Dataset (CSV)",
+    data=csv,
+    file_name="buffet_full_dataset.csv",
+    mime="text/csv",
+)
+
+# 3. OPTIONAL: PAGINATION
+st.markdown("### 📄 Paginated View")
+
+page_size = 1000
+total_pages = (len(full_df) // page_size) + 1
+
+page = st.number_input("Page", min_value=1, max_value=total_pages, value=1)
+
+start = (page - 1) * page_size
+end = start + page_size
+
+st.dataframe(full_df.iloc[start:end], use_container_width=True)
