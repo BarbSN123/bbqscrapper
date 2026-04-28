@@ -1091,7 +1091,7 @@ if "last_updated" not in st.session_state:
 @st.cache_data(ttl=120)
 def fetch_from_github():
     # base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
-    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/blob/main"
+    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
 
     files = [
         # "buffet_data_1.json",
