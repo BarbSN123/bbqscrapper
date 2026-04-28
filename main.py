@@ -1090,21 +1090,13 @@ if "last_updated" not in st.session_state:
 # ========= FETCH DATA =========
 @st.cache_data(ttl=120)
 def fetch_from_github():
-    # base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
-    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
+    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    # base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
 
     files = [
-        # "buffet_data_1.json",
-        # "buffet_data_2.json",
-        # "buffet_data_3.json",
-        "buffet_data_part_1.json",
-        "buffet_data_part_2.json",
-        "buffet_data_part_3.json",
-        "buffet_data_part_4.json",
-        "buffet_data_part_5.json",
-        "buffet_data_part_6.json",
-        "buffet_data_part_7.json",
-        "buffet_data_part_8.json",
+        "buffet_data_1.json",
+        "buffet_data_2.json",
+        "buffet_data_3.json",
     ]
 
     dfs = []
@@ -1140,18 +1132,25 @@ def fetch_from_github():
     return full_df, gen_time
 
 def fetch_full_no_cache():
-    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
-
+    # base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
+    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    
     files = [
-        "buffet_data_part_1.json",
-        "buffet_data_part_2.json",
-        "buffet_data_part_3.json",
-        "buffet_data_part_4.json",
-        "buffet_data_part_5.json",
-        "buffet_data_part_6.json",
-        "buffet_data_part_7.json",
-        "buffet_data_part_8.json",
+        "buffet_data_1.json",
+        "buffet_data_2.json",
+        "buffet_data_3.json",
     ]
+    
+    # files = [
+    #     "buffet_data_part_1.json",
+    #     "buffet_data_part_2.json",
+    #     "buffet_data_part_3.json",
+    #     "buffet_data_part_4.json",
+    #     "buffet_data_part_5.json",
+    #     "buffet_data_part_6.json",
+    #     "buffet_data_part_7.json",
+    #     "buffet_data_part_8.json",
+    # ]
 
     dfs = []
 
@@ -1307,89 +1306,17 @@ else:
     st.write("Total Rows:", len(df))
 
 # ========= FULL DATA =========
-# st.markdown("---")
-# st.markdown("## 📆 Complete Dataset")
-
-# # full_df, _ = fetch_from_github() (uncomment this tommorow)
-# full_df = fetch_full_no_cache()
-
-# if full_df.empty:
-#     st.warning("No complete dataset available.")
-#     st.stop()
-
-# #  SAFE handling again
-# full_df["Date"] = pd.to_datetime(full_df["Date"], errors="coerce")
-# full_df = full_df.dropna(subset=["Date"])
-
-# full_df["Day"] = full_df["Date"].dt.day_name()
-# full_df["Date"] = full_df["Date"].dt.strftime("%Y-%m-%d")
-
-# if selected_branch != "All Branches":
-#     full_df = full_df[full_df["Branch"] == selected_branch]
-
-# full_df = full_df[["Date", "Day"] + [col for col in full_df.columns if col not in ["Date", "Day"]]]
-
-# st.dataframe(full_df.sort_values(["Date", "Branch"]), width="stretch")
-# st.write("Total Rows (All Dates):", len(full_df))
-
-# ========= FULL DATA =========
 st.markdown("---")
 st.markdown("## 📆 Complete Dataset")
 
-@st.cache_data(ttl=300)
-def fetch_full_data():
-    base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
-
-    files = [
-        "buffet_data_part_1.json",
-        "buffet_data_part_2.json",
-        "buffet_data_part_3.json",
-        "buffet_data_part_4.json",
-        "buffet_data_part_5.json",
-        "buffet_data_part_6.json",
-        "buffet_data_part_7.json",
-        "buffet_data_part_8.json",
-    ]
-
-    dfs = []
-
-    for file in files:
-        url = f"{base_url}/{file}"
-
-        try:
-            res = requests.get(url, timeout=15)
-            res.raise_for_status()
-            raw = res.json()
-
-            if isinstance(raw, dict) and "records" in raw:
-                df = pd.DataFrame(raw["records"])
-            else:
-                df = pd.DataFrame(raw)
-
-            if "Date" in df.columns:
-                df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-                df = df.dropna(subset=["Date"])
-
-            dfs.append(df)
-
-        except Exception as e:
-            st.warning(f"⚠️ Could not load {file}: {e}")
-
-    if not dfs:
-        return pd.DataFrame()
-
-    return pd.concat(dfs, ignore_index=True)
-
-
-# LOAD DATA
-with st.spinner("Loading full dataset..."):
-    full_df = fetch_full_data()
+# full_df, _ = fetch_from_github() (uncomment this tommorow)
+full_df = fetch_full_no_cache()
 
 if full_df.empty:
     st.warning("No complete dataset available.")
     st.stop()
 
-# SAFE handling
+#  SAFE handling again
 full_df["Date"] = pd.to_datetime(full_df["Date"], errors="coerce")
 full_df = full_df.dropna(subset=["Date"])
 
@@ -1401,36 +1328,108 @@ if selected_branch != "All Branches":
 
 full_df = full_df[["Date", "Day"] + [col for col in full_df.columns if col not in ["Date", "Day"]]]
 
-# SORT FULL DATA
-full_df = full_df.sort_values(["Date", "Branch"])
+st.dataframe(full_df.sort_values(["Date", "Branch"]), width="stretch")
+st.write("Total Rows (All Dates):", len(full_df))
 
-# ========= UI STRATEGY =========
+# ========= FULL DATA =========
+# st.markdown("---")
+# st.markdown("## 📆 Complete Dataset")
 
-st.write(f"📊 Total Rows (All Dates): {len(full_df)}")
+# @st.cache_data(ttl=300)
+# def fetch_full_data():
+#     base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
 
-# 1. SHOW LIMITED VIEW (FAST)
-st.markdown("### 🔍 Preview (First 2000 rows)")
-st.dataframe(full_df.head(2000), use_container_width=True)
+#     files = [
+#         "buffet_data_part_1.json",
+#         "buffet_data_part_2.json",
+#         "buffet_data_part_3.json",
+#         "buffet_data_part_4.json",
+#         "buffet_data_part_5.json",
+#         "buffet_data_part_6.json",
+#         "buffet_data_part_7.json",
+#         "buffet_data_part_8.json",
+#     ]
 
-# 2. DOWNLOAD FULL DATA (REAL SOLUTION)
-csv = full_df.to_csv(index=False).encode("utf-8")
+#     dfs = []
 
-st.download_button(
-    label="⬇️ Download Full Dataset (CSV)",
-    data=csv,
-    file_name="buffet_full_dataset.csv",
-    mime="text/csv",
-)
+#     for file in files:
+#         url = f"{base_url}/{file}"
 
-# 3. OPTIONAL: PAGINATION
-st.markdown("### 📄 Paginated View")
+#         try:
+#             res = requests.get(url, timeout=15)
+#             res.raise_for_status()
+#             raw = res.json()
 
-page_size = 1000
-total_pages = (len(full_df) // page_size) + 1
+#             if isinstance(raw, dict) and "records" in raw:
+#                 df = pd.DataFrame(raw["records"])
+#             else:
+#                 df = pd.DataFrame(raw)
 
-page = st.number_input("Page", min_value=1, max_value=total_pages, value=1)
+#             if "Date" in df.columns:
+#                 df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+#                 df = df.dropna(subset=["Date"])
 
-start = (page - 1) * page_size
-end = start + page_size
+#             dfs.append(df)
 
-st.dataframe(full_df.iloc[start:end], use_container_width=True)
+#         except Exception as e:
+#             st.warning(f"⚠️ Could not load {file}: {e}")
+
+#     if not dfs:
+#         return pd.DataFrame()
+
+#     return pd.concat(dfs, ignore_index=True)
+
+
+# # LOAD DATA
+# with st.spinner("Loading full dataset..."):
+#     full_df = fetch_full_data()
+
+# if full_df.empty:
+#     st.warning("No complete dataset available.")
+#     st.stop()
+
+# # SAFE handling
+# full_df["Date"] = pd.to_datetime(full_df["Date"], errors="coerce")
+# full_df = full_df.dropna(subset=["Date"])
+
+# full_df["Day"] = full_df["Date"].dt.day_name()
+# full_df["Date"] = full_df["Date"].dt.strftime("%Y-%m-%d")
+
+# if selected_branch != "All Branches":
+#     full_df = full_df[full_df["Branch"] == selected_branch]
+
+# full_df = full_df[["Date", "Day"] + [col for col in full_df.columns if col not in ["Date", "Day"]]]
+
+# # SORT FULL DATA
+# full_df = full_df.sort_values(["Date", "Branch"])
+
+# # ========= UI STRATEGY =========
+
+# st.write(f"📊 Total Rows (All Dates): {len(full_df)}")
+
+# # 1. SHOW LIMITED VIEW (FAST)
+# st.markdown("### 🔍 Preview (First 2000 rows)")
+# st.dataframe(full_df.head(2000), use_container_width=True)
+
+# # 2. DOWNLOAD FULL DATA (REAL SOLUTION)
+# csv = full_df.to_csv(index=False).encode("utf-8")
+
+# st.download_button(
+#     label="⬇️ Download Full Dataset (CSV)",
+#     data=csv,
+#     file_name="buffet_full_dataset.csv",
+#     mime="text/csv",
+# )
+
+# # 3. OPTIONAL: PAGINATION
+# st.markdown("### 📄 Paginated View")
+
+# page_size = 1000
+# total_pages = (len(full_df) // page_size) + 1
+
+# page = st.number_input("Page", min_value=1, max_value=total_pages, value=1)
+
+# start = (page - 1) * page_size
+# end = start + page_size
+
+# st.dataframe(full_df.iloc[start:end], use_container_width=True)
