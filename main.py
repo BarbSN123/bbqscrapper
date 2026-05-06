@@ -1090,8 +1090,9 @@ if "last_updated" not in st.session_state:
 # ========= FETCH DATA =========
 @st.cache_data(ttl=120)
 def fetch_from_github():
-    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    # base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
     # base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
+    base_url = "https://github.com/diyanshu-anand/bbq-data/main/json"
 
     files = [
         "buffet_data_1.json",
@@ -1134,7 +1135,8 @@ def fetch_from_github():
 
 def fetch_full_no_cache():
     # base_url = "https://raw.githubusercontent.com/BarbSN123/bbqscrapper/main"
-    base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    # base_url = "https://raw.githubusercontent.com/BarbSN123/production_pipeline/main/json"
+    base_url = "https://github.com/diyanshu-anand/bbq-data/main/json"
     
     files = [
         "buffet_data_1.json",
