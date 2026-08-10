@@ -1196,6 +1196,25 @@ df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 df = df.dropna(subset=["Date"])
 df["Day"] = df["Date"].dt.day_name()
 
+# ========= FETCH ALERTS =========
+
+@st.cache_data(ttl=120)
+def fetch_alerts():
+    url = (
+        "https://raw.githubusercontent.com/"
+        "BarbSN123/production_pipeline/main/alerts/alerts.json"
+        f"?nocache={int(time.time())}"
+    )
+
+    try:
+        res = requests.get(url, timeout=10)
+        res.raise_for_status()
+        return res.json()
+
+    except Exception as e:
+        st.warning(f"⚠️ Could not load alerts: {e}")
+        return None
+
 # ========= CHANGE DETECTION =========
 changed_branches = []
 
@@ -1334,6 +1353,275 @@ full_df = full_df[["Date", "Day"] + [col for col in full_df.columns if col not i
 
 st.dataframe(full_df.sort_values(["Date", "Branch"]), width="stretch")
 st.write("Total Rows (All Dates):", len(full_df))
+
+# ============================================================
+# RECENT CHANGES (Commited by divyanshu anand)
+# ============================================================
+
+st.markdown("---")
+st.markdown("## 🔔 Recent Changes")
+
+alerts_data = fetch_alerts()
+
+if alerts_data is None:
+    st.info("No alert data available yet.")
+
+else:
+
+    total_changes = alerts_data.get("total_changes", 0)
+    summary = alerts_data.get("summary", {})
+
+    # ========= SUMMARY =========
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    col1.metric(
+        "Total Changes",
+        total_changes
+    )
+
+    col2.metric(
+        "🆕 New",
+        summary.get("new", 0)
+    )
+
+    col3.metric(
+        "💰 Price Changed",
+        summary.get("price_changed", 0)
+    )
+
+    col4.metric(
+        "🗑️ Removed",
+        summary.get("removed", 0)
+    )
+
+    col5.metric(
+        "✏️ Other",
+        summary.get("other_changed", 0)
+    )
+
+    st.caption(
+        f"Alerts generated at: "
+        f"{alerts_data.get('generated_at', 'Unknown')}"
+    )
+
+    # ========= NO CHANGES =========
+
+    changes = alerts_data.get("changes", [])
+
+    if not changes:
+
+        st.success("✅ No changes detected.")
+
+    else:
+
+        # ========= FILTERS =========
+
+        alert_col1, alert_col2 = st.columns(2)
+
+        with alert_col1:
+
+            type_options = [
+                "All Changes",
+                "NEW",
+                "PRICE_CHANGED",
+                "REMOVED",
+                "OTHER_CHANGED"
+            ]
+
+            selected_type = st.selectbox(
+                "Change Type",
+                type_options,
+                key="alert_type_filter"
+            )
+
+        with alert_col2:
+
+            alert_branches = sorted(
+                list({
+                    change.get("record", {}).get("Branch")
+                    for change in changes
+                    if change.get("record", {}).get("Branch")
+                })
+            )
+
+            branch_options = ["All Branches"] + alert_branches
+
+            selected_alert_branch = st.selectbox(
+                "Branch",
+                branch_options,
+                key="alert_branch_filter"
+            )
+
+        # ========= APPLY FILTERS =========
+
+        filtered_changes = changes
+
+        if selected_type != "All Changes":
+
+            filtered_changes = [
+                change
+                for change in filtered_changes
+                if change.get("type") == selected_type
+            ]
+
+        if selected_alert_branch != "All Branches":
+
+            filtered_changes = [
+                change
+                for change in filtered_changes
+                if change.get("record", {}).get("Branch")
+                == selected_alert_branch
+            ]
+
+        st.write(
+            f"Showing **{len(filtered_changes)}** change(s)"
+        )
+
+        # ========= CHANGE TABLE =========
+
+        alert_rows = []
+
+        for change in filtered_changes:
+
+            record = change.get("record", {})
+            change_type = change.get("type", "UNKNOWN")
+            changed_fields = change.get("changes", {})
+
+            # -------------------------
+            # TYPE
+            # -------------------------
+
+            if change_type == "NEW":
+
+                type_display = "🆕 NEW"
+
+                description = "New buffet available"
+
+            elif change_type == "PRICE_CHANGED":
+
+                type_display = "💰 PRICE CHANGED"
+
+                price_changes = []
+
+                for field, values in changed_fields.items():
+
+                    old_value = values.get("old")
+                    new_value = values.get("new")
+
+                    price_changes.append(
+                        f"₹{old_value} → ₹{new_value}"
+                    )
+
+                description = ", ".join(price_changes)
+
+            elif change_type == "REMOVED":
+
+                type_display = "🗑️ REMOVED"
+
+                description = "Buffet removed"
+
+            elif change_type == "OTHER_CHANGED":
+
+                type_display = "✏️ CHANGED"
+
+                descriptions = []
+
+                for field, values in changed_fields.items():
+
+                    old_value = values.get("old")
+                    new_value = values.get("new")
+
+                    descriptions.append(
+                        f"{field}: {old_value} → {new_value}"
+                    )
+
+                description = "; ".join(descriptions)
+
+            else:
+
+                type_display = change_type
+
+                description = "Data changed"
+
+            # -------------------------
+            # DATE
+            # -------------------------
+
+            raw_date = record.get("Date", "")
+
+            try:
+
+                formatted_date = datetime.strptime(
+                    raw_date,
+                    "%Y-%m-%d"
+                ).strftime("%d %b %Y")
+
+            except Exception:
+
+                formatted_date = raw_date
+
+            # -------------------------
+            # ROW
+            # -------------------------
+
+            alert_rows.append({
+
+                "Type": type_display,
+
+                "Branch": record.get(
+                    "Branch",
+                    ""
+                ),
+
+                "Date": formatted_date,
+
+                "Slot": record.get(
+                    "Slot Time",
+                    ""
+                ),
+
+                "Period": record.get(
+                    "Period",
+                    ""
+                ),
+
+                "Customer": record.get(
+                    "Customer Type",
+                    ""
+                ),
+
+                "Food": record.get(
+                    "Food Type",
+                    ""
+                ),
+
+                "Plan": record.get(
+                    "Plan",
+                    ""
+                ),
+
+                "Change": description
+
+            })
+
+        # ========= DISPLAY =========
+
+        if alert_rows:
+
+            alerts_df = pd.DataFrame(alert_rows)
+
+            st.dataframe(
+                alerts_df,
+                width="stretch",
+                hide_index=True
+            )
+
+        else:
+
+            st.info(
+                "No changes match the selected filters."
+            )
 
 # ========= FULL DATA =========
 # st.markdown("---")
